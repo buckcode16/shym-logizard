@@ -12,10 +12,10 @@ load_dotenv(dotenv_path=ENV_PATH)
 class Credentials:
     APP_KEY = os.getenv("APP_KEY")
     USER_ID = os.getenv("USER_ID")
-    PASSWORD = os.getenv("USER_PASSWORD")
+    USER_PASSWORD = os.getenv("USER_PASSWORD")
 
 
-class LzExportConfig:
+class ExportConfig:
     class Product:
         FILE_ID = "6"
         PTRN_ID = "0"
@@ -39,9 +39,9 @@ class LzExportConfig:
 
 class Endpoints:
     BASE_URL = os.getenv("BASE_URL")
-    LOGIN = f"{BASE_URL}login/login/userlogin"
-    KEY_LOGIN = f"{BASE_URL}login/login/keylogin"
-    EXPORT = f"{BASE_URL}common/export/export"
+    LOGIN_URL = f"{BASE_URL}login/login/userlogin"
+    KEYLOGIN_URL = f"{BASE_URL}login/login/keylogin"
+    EXPORT_URL = f"{BASE_URL}common/export/export"
 
 
 if __name__ == "__main__":

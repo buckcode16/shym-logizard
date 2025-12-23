@@ -1,1 +1,1 @@
-from .client import LogizardClient
+from . import client

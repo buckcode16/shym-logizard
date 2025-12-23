@@ -11,40 +11,49 @@ configure alembic.ini to use db url
 """
 
 import asyncio
-import os
 
-from src.api import LogizardClient
-from src.config import (
-    APP_KEY,
-    EXPORT_URL,
-    KEYLOGIN_URL,
-    LOGIN_URL,
-    PROCESS_FLG,
-    USER_ID,
-    USER_PASSWORD,
-)
+from src.api.client import LogizardClient
+from src.config import Credentials, Endpoints, ExportConfig
+from src.schemas.auth import LoginResponse
+from src.services import product
 
 payload_login = {
-    "APP_KEY": APP_KEY,
-    "USER_ID": USER_ID,
-    "PASSWORD": USER_PASSWORD,
-    "PROCESS_FLG": PROCESS_FLG,
+    "APP_KEY": Credentials.APP_KEY,
+    "USER_ID": Credentials.USER_ID,
+    "PASSWORD": Credentials.USER_PASSWORD,
+    "PROCESS_FLG": ExportConfig.DEFAULT_PROCESS_FLAG,
+}
+
+payload_master_product = {
+    "OWNER_ID": ExportConfig.DEFAULT_OWNER_ID,
+    "AREA_ID": ExportConfig.DEFAULT_AREA_ID,
+    "FILE_ID": ExportConfig.Product.FILE_ID,
+    "PTRN_ID": ExportConfig.Product.PTRN_ID,
 }
 
 
 async def main():
     async with LogizardClient() as client:
-        res_login = await client.post(LOGIN_URL, json=payload_login)
+        await client.post_json(
+            Endpoints.LOGIN_URL, payload=payload_login, response_model=LoginResponse
+        )
 
-        data = res_login.json()
+        print("Initiate fetch.")
 
-        # calls apis
-        # export_master
-        # export_stock
-        # export_d2c
-        # export_b2b
+        results = await asyncio.gather(
+            # export_master
+            product.fetch(
+                client, url=Endpoints.EXPORT_URL, payload=payload_master_product
+            ),
+            # export_stock
+            #     stock_service.fetch(client, url=..., payload=...),
+            # # export_d2c
+            #     d2c_service.fetch(client, url=..., payload=...),
+            # # export_b2b
+            #     b2b_service.fetch(client, url=..., payload=...)
+        )
 
-        pass
+        print("Fetch complete.")
 
 
 if __name__ == "__main__":

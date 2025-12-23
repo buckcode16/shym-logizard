@@ -1,6 +1,10 @@
 import logging
+from typing import Type, TypeVar
 
 import httpx
+from pydantic import BaseModel
+
+T = TypeVar("T", bound=BaseModel)
 
 
 class LogizardClient:
@@ -28,12 +32,17 @@ class LogizardClient:
         if self.client:
             await self.client.aclose()
 
-    async def post_json(self, url, payload):
+    async def post_json(
+        self,
+        url: str,
+        payload: dict,
+        response_model: Type[T],
+    ) -> T:
         try:
             response = await self.client.post(url, json=payload)
             response.raise_for_status()
 
-            return response.json()
+            return response_model(**response.json())
 
         # !revisit all exceptions, raise keyword,
         # and also if raise custom ServiceTimeoutError is better

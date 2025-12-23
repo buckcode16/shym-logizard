@@ -1,1 +1,1 @@
-from . import master_product
+from . import product
