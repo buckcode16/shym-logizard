@@ -15,7 +15,7 @@ import asyncio
 from src.api.client import LogizardClient
 from src.config import Credentials, Endpoints, ExportConfig
 from src.schemas.auth import LoginResponse
-from src.services import product
+from src.services import product, stock
 
 payload_login = {
     "APP_KEY": Credentials.APP_KEY,
@@ -29,6 +29,13 @@ payload_master_product = {
     "AREA_ID": ExportConfig.DEFAULT_AREA_ID,
     "FILE_ID": ExportConfig.Product.FILE_ID,
     "PTRN_ID": ExportConfig.Product.PTRN_ID,
+}
+
+payload_stock = {
+    "OWNER_ID": ExportConfig.DEFAULT_OWNER_ID,
+    "AREA_ID": ExportConfig.DEFAULT_AREA_ID,
+    "FILE_ID": ExportConfig.Stock.FILE_ID,
+    "PTRN_ID": ExportConfig.Stock.PTRN_ID,
 }
 
 
@@ -46,7 +53,7 @@ async def main():
                 client, url=Endpoints.EXPORT_URL, payload=payload_master_product
             ),
             # export_stock
-            #     stock_service.fetch(client, url=..., payload=...),
+            stock.fetch(client, url=Endpoints.EXPORT_URL, payload=payload_stock),
             # # export_d2c
             #     d2c_service.fetch(client, url=..., payload=...),
             # # export_b2b

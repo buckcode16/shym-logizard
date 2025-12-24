@@ -8,6 +8,8 @@ ROOT_DIR = CURRENT_DIR.parent
 ENV_PATH = ROOT_DIR / ".env"
 load_dotenv(dotenv_path=ENV_PATH)
 
+DB_URL = os.getenv("POSTGRES_DB")
+
 
 class Credentials:
     APP_KEY = os.getenv("APP_KEY")

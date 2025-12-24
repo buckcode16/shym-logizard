@@ -1,0 +1,18 @@
+from sqlalchemy import String, Text
+from sqlalchemy.orm import Mapped, mapped_column
+
+from src.database.models.base import Base
+
+
+class Stock(Base):
+    __tablename__ = "stock"
+
+    block_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    block_short_name: Mapped[str] = mapped_column(Text, primary_key=True)
+    loc: Mapped[str] = mapped_column(Text, primary_key=True)
+    item_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    stock_qty: Mapped[str] = mapped_column(Text, primary_key=True)
+    assign_qty: Mapped[str] = mapped_column(Text, primary_key=True)
+    barcode: Mapped[str] = mapped_column(Text, primary_key=True)
+    last_arv_date: Mapped[str] = mapped_column(Text, primary_key=True)
+    last_ship_date: Mapped[str] = mapped_column(Text, primary_key=True)
