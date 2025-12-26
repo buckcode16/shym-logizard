@@ -16,6 +16,5 @@ class StockRow(BaseModel):
     item_id: Optional[str] = Field(alias="商品ID")
     stock_qty: Optional[str] = Field(alias="在庫数(引当数を含む)")
     assign_qty: Optional[str] = Field(alias="引当数")
-    barcode: Optional[str] = Field(alias="バーコード")
     last_arv_date: Optional[str] = Field(alias="最終入荷日")
     last_ship_date: Optional[str] = Field(alias="最終出荷日")

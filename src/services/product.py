@@ -13,13 +13,13 @@ from src.schemas.response import ExportResponse
 
 
 async def fetch(client: LogizardClient, url: str, payload: dict) -> List[ProductRow]:
+    # ExportResponse is base pydantic class for all LZ export endpoint
     res = await client.post_json(url, payload, response_model=ExportResponse)
 
     reader = csv.DictReader(res.data.csv_lines)
 
     clean_data = []
     for row in reader:
-        # Strict validation handled by Pydantic here
         clean_data.append(ProductRow(**row))
 
     # allow debugger to run and open dwranger

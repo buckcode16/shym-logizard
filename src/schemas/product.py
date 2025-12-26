@@ -8,6 +8,7 @@ from src.database.models.base import Base
 
 
 class ProductRow(BaseModel):
+    # !revisit what is ConfigDict
     model_config = ConfigDict(populate_by_name=True)
 
     item_id: Optional[str] = Field(alias="商品ID")
