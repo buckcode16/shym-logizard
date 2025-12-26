@@ -15,7 +15,7 @@ import asyncio
 from src.api.client import LogizardClient
 from src.config import Credentials, Endpoints, ExportConfig
 from src.schemas.auth import LoginResponse
-from src.services import product, stock
+from src.services import order, product, stock
 
 payload_login = {
     "APP_KEY": Credentials.APP_KEY,
@@ -38,6 +38,20 @@ payload_stock = {
     "PTRN_ID": ExportConfig.Stock.PTRN_ID,
 }
 
+payload_d2c = {
+    "OWNER_ID": ExportConfig.DEFAULT_OWNER_ID,
+    "AREA_ID": ExportConfig.DEFAULT_AREA_ID,
+    "FILE_ID": ExportConfig.D2C.FILE_ID,
+    "PTRN_ID": ExportConfig.D2C.PTRN_ID,
+}
+
+payload_b2b = {
+    "OWNER_ID": ExportConfig.DEFAULT_OWNER_ID,
+    "AREA_ID": ExportConfig.DEFAULT_AREA_ID,
+    "FILE_ID": ExportConfig.B2B.FILE_ID,
+    "PTRN_ID": ExportConfig.B2B.PTRN_ID,
+}
+
 
 async def main():
     async with LogizardClient() as client:
@@ -48,16 +62,16 @@ async def main():
         print("Initiate fetch.")
 
         results = await asyncio.gather(
-            # export_master
-            product.fetch(
-                client, url=Endpoints.EXPORT_URL, payload=payload_master_product
-            ),
-            # export_stock
-            stock.fetch(client, url=Endpoints.EXPORT_URL, payload=payload_stock),
-            # # export_d2c
-            #     d2c_service.fetch(client, url=..., payload=...),
-            # # export_b2b
-            #     b2b_service.fetch(client, url=..., payload=...)
+            # # export_master
+            # product.fetch(
+            #     client, url=Endpoints.EXPORT_URL, payload=payload_master_product
+            # ),
+            # # export_stock
+            # stock.fetch(client, url=Endpoints.EXPORT_URL, payload=payload_stock),
+            # export_d2c
+            order.fetch(client, url=Endpoints.EXPORT_URL, payload=payload_d2c),
+            # export_b2b
+            order.fetch(client, url=Endpoints.EXPORT_URL, payload=payload_b2b),
         )
 
         print("Fetch complete.")

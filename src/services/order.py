@@ -18,63 +18,51 @@ async def fetch(
     client: LogizardClient, url: str, payload: dict
 ) -> List[B2BRow | D2CRow]:
     now = datetime.now()
-
     formatted_date = now.strftime("%Y%m%d")
 
-    # payload variable (dict mutable) in memory will be extended across all reference in runtime env
     payload.update(
         {"TARGET_DATE_FROM": formatted_date, "TARGET_DATE_TO": formatted_date}
     )
-    res = await client.post_json(url, payload, response_model=ExportResponse)
+
+    try:
+        res = await client.post_json(url, payload, response_model=ExportResponse)
+        if not res.data or not res.data.csv_lines:
+            return []
+    except Exception:
+        return []
 
     reader = csv.DictReader(res.data.csv_lines)
-
-    # clean: group and aggregate qty
-    clean_data = []
-
     accumulator = {}
-    if payload["FILE_ID"] == "3":
-        for row in reader:
-            validated = D2CRow(**row)
+    is_d2c = payload["FILE_ID"] == "3"
 
-            key = (validated.item_id, validated.ship_define_date)
-            if key not in accumulator:
-                accumulator[key] = {
-                    "item_id": validated.item_id,
-                    "ship_define_date": validated.ship_define_date,
-                    "cust_id": validated.cust_id,
-                    "cust_name": validated.cust_name,
-                    "ship_qty": 0,
-                    "duties_type": "mailorder",
-                }
+    for row in reader:
+        validated = D2CRow(**row) if is_d2c else B2BRow(**row)
 
-                accumulator[key]["ship_qty"] += int(validated.ship_qty or 0)
+        key = (validated.item_id, validated.ship_define_date)
 
-        clean_data = list(accumulator.values())
-    else:
-        for row in reader:
-            validated = B2BRow(**row)
+        if key not in accumulator:
+            accumulator[key] = {
+                "item_id": validated.item_id,
+                "ship_define_date": validated.ship_define_date,
+                "cust_id": getattr(validated, "cust_id", None),
+                "cust_name": getattr(validated, "cust_name", None),
+                "ship_qty_int": 0,
+            }
 
-            key = (validated.item_id, validated.ship_define_date)
-            if key not in accumulator:
-                accumulator[key] = {
-                    "item_id": validated.item_id,
-                    "ship_define_date": validated.ship_define_date,
-                    "cust_id": validated.cust_id,
-                    "cust_name": validated.cust_name,
-                    "ship_qty": 0,
-                    "duties_type": "wholesale",
-                }
+        accumulator[key]["ship_qty_int"] += int(validated.ship_qty or 0)
 
-                accumulator[key]["ship_qty"] += int(validated.ship_define_qty or 0)
+    clean_data = []
+    for data in accumulator.values():
+        qty_str = str(data.pop("ship_qty_int"))
+        data["ship_qty"] = qty_str
 
-        clean_data = list(accumulator.values())
+        obj = D2CRow(**data) if is_d2c else B2BRow(**data)
+        clean_data.append(obj)
 
-    # allow debugger to run and open dwranger
-    # df = pd.DataFrame([row.model_dump() for row in clean_rows])
-    # print(df)
+    if clean_data:
+        async with AsyncSessionLocal() as session:
+            repo = BaseRepository(session, model=Order)
 
-    async with AsyncSessionLocal() as session:
-        repo = BaseRepository(session, model=Order)
-        await repo.bulk_upsert(clean_data)
+            await repo.bulk_upsert(clean_data)
+
     return clean_data
