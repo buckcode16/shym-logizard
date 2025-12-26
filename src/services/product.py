@@ -1,9 +1,6 @@
 import csv
 from typing import List
 
-# delete on prod
-import pandas as pd
-
 from src.api.client import LogizardClient
 from src.database.engine import AsyncSessionLocal
 from src.database.models.product import Product
@@ -21,10 +18,6 @@ async def fetch(client: LogizardClient, url: str, payload: dict) -> List[Product
     clean_data = []
     for row in reader:
         clean_data.append(ProductRow(**row))
-
-    # allow debugger to run and open dwranger
-    # df = pd.DataFrame([row.model_dump() for row in clean_rows])
-    # print(df)
 
     async with AsyncSessionLocal() as session:
         repo = BaseRepository(session, model=Product)

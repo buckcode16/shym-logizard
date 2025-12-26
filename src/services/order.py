@@ -59,10 +59,9 @@ async def fetch(
         obj = D2CRow(**data) if is_d2c else B2BRow(**data)
         clean_data.append(obj)
 
-    if clean_data:
-        async with AsyncSessionLocal() as session:
-            repo = BaseRepository(session, model=Order)
+    async with AsyncSessionLocal() as session:
+        repo = BaseRepository(session, model=Order)
 
-            await repo.bulk_upsert(clean_data)
+        await repo.replace_by_date_range(clean_data, "ship_define_date", formatted_date)
 
     return clean_data

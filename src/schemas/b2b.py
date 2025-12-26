@@ -1,10 +1,6 @@
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import String, Text
-from sqlalchemy.orm import Mapped, mapped_column
-
-from src.database.models.base import Base
 
 
 class B2BRow(BaseModel):

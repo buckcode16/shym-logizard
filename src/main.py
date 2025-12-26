@@ -62,12 +62,12 @@ async def main():
         print("Initiate fetch.")
 
         results = await asyncio.gather(
-            # # export_master
-            # product.fetch(
-            #     client, url=Endpoints.EXPORT_URL, payload=payload_master_product
-            # ),
-            # # export_stock
-            # stock.fetch(client, url=Endpoints.EXPORT_URL, payload=payload_stock),
+            # export_master
+            product.fetch(
+                client, url=Endpoints.EXPORT_URL, payload=payload_master_product
+            ),
+            # export_stock
+            stock.fetch(client, url=Endpoints.EXPORT_URL, payload=payload_stock),
             # export_d2c
             order.fetch(client, url=Endpoints.EXPORT_URL, payload=payload_d2c),
             # export_b2b
