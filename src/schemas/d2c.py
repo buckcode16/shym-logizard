@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -13,3 +14,5 @@ class D2CRow(BaseModel):
     item_id: Optional[str] = Field(alias="商品ID")
     duties_type: str = "mailorder"
     # request_date: Optional[str] = Field(alias="注文日")
+
+    snapshot_dt: Optional[datetime] = None

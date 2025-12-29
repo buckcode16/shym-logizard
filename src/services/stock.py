@@ -1,4 +1,5 @@
 import csv
+from datetime import datetime, timedelta, timezone
 from typing import List
 
 from src.api.client import LogizardClient
@@ -11,11 +12,15 @@ from src.schemas.stock import StockRow
 
 async def fetch(client: LogizardClient, url: str, payload: dict) -> List[StockRow]:
     res = await client.post_json(url, payload, response_model=ExportResponse)
-
+    JST = timezone(timedelta(hours=9))
+    now = datetime.now(JST)
+    if not res.data or not res.data.csv_lines:
+        return []
     reader = csv.DictReader(res.data.csv_lines)
 
     clean_data = []
     for row in reader:
+        row["snapshot_dt"] = now
         clean_data.append(StockRow(**row))
 
     async with AsyncSessionLocal() as session:

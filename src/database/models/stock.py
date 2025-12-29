@@ -1,4 +1,6 @@
-from sqlalchemy import String, Text
+from datetime import datetime
+
+from sqlalchemy import DateTime, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.database.models.base import Base
@@ -16,3 +18,5 @@ class Stock(Base):
     assign_qty: Mapped[str] = mapped_column(Text, nullable=True)
     last_arv_date: Mapped[str] = mapped_column(Text, nullable=True)
     last_ship_date: Mapped[str] = mapped_column(Text, nullable=True)
+
+    snapshot_dt: Mapped[datetime] = mapped_column(DateTime, nullable=True)

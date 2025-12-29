@@ -1,4 +1,6 @@
-from sqlalchemy import Text
+from datetime import datetime
+
+from sqlalchemy import DateTime, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.database.models.base import Base
@@ -13,3 +15,5 @@ class Order(Base):
     ship_qty: Mapped[str] = mapped_column(Text, nullable=True)
     item_id: Mapped[str] = mapped_column(Text, primary_key=True)
     duties_type: Mapped[str] = mapped_column(Text, nullable=True)
+
+    snapshot_dt: Mapped[datetime] = mapped_column(DateTime, nullable=True)

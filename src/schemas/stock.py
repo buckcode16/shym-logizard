@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -18,3 +19,5 @@ class StockRow(BaseModel):
     assign_qty: Optional[str] = Field(alias="引当数")
     last_arv_date: Optional[str] = Field(alias="最終入荷日")
     last_ship_date: Optional[str] = Field(alias="最終出荷日")
+
+    snapshot_dt: Optional[datetime] = None

@@ -1,9 +1,6 @@
 import csv
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List
-
-# delete on prod
-import pandas as pd
 
 from src.api.client import LogizardClient
 from src.database.engine import AsyncSessionLocal
@@ -17,18 +14,18 @@ from src.schemas.response import ExportResponse
 async def fetch(
     client: LogizardClient, url: str, payload: dict
 ) -> List[B2BRow | D2CRow]:
-    now = datetime.now()
+    JST = timezone(timedelta(hours=9))
+    now = datetime.now(JST)
     start_date = (now - timedelta(days=1)).strftime("%Y%m%d")
     end_date = now.strftime("%Y%m%d")
 
     payload.update({"TARGET_DATE_FROM": start_date, "TARGET_DATE_TO": end_date})
 
-    try:
-        res = await client.post_json(url, payload, response_model=ExportResponse)
-        if not res.data or not res.data.csv_lines:
-            return []
-    except Exception:
-        return []
+    res = await client.post_json(url, payload, response_model=ExportResponse)
+
+    # Handle case where API returns success but no data (e.g., no orders for the day)
+    if not res.data or not res.data.csv_lines:
+        clean_data = []
 
     reader = csv.DictReader(res.data.csv_lines)
     accumulator = {}
@@ -54,7 +51,7 @@ async def fetch(
     for data in accumulator.values():
         qty_str = str(data.pop("ship_qty_int"))
         data["ship_qty"] = qty_str
-
+        data["snapshot_dt"] = now
         obj = D2CRow(**data) if is_d2c else B2BRow(**data)
         clean_data.append(obj)
 

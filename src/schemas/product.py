@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -30,3 +31,5 @@ class ProductRow(BaseModel):
     item_rsv_col008: Optional[str] = Field(alias="商品予備項目００８")
     item_rsv_col009: Optional[str] = Field(alias="商品予備項目００９")
     item_rsv_col010: Optional[str] = Field(alias="商品予備項目０１０")
+
+    snapshot_dt: Optional[datetime] = None

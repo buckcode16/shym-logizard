@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -12,3 +13,5 @@ class B2BRow(BaseModel):
     ship_qty: Optional[str] = Field(alias="出荷確定数")
     item_id: Optional[str] = Field(alias="商品ID")
     duties_type: str = "wholesale"
+
+    snapshot_dt: Optional[datetime] = None
