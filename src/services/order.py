@@ -15,7 +15,7 @@ async def fetch(
     client: LogizardClient, url: str, payload: dict
 ) -> List[B2BRow | D2CRow]:
     JST = timezone(timedelta(hours=9))
-    now = datetime.now(JST)
+    now = datetime.now(JST).replace(tzinfo=None)
     start_date = (now - timedelta(days=1)).strftime("%Y%m%d")
     end_date = now.strftime("%Y%m%d")
 
