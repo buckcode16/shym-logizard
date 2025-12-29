@@ -1,7 +1,7 @@
 from typing import List, Type, TypeVar
 
 from pydantic import BaseModel
-from sqlalchemy import delete
+from sqlalchemy import and_, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 SQLModel = TypeVar("SQLModel")
@@ -63,13 +63,19 @@ class BaseRepository:
         else:
             await self.session.commit()
 
-    async def replace_by_date_range(self, items, date_col, target_date):
-        # add WHERE clause : column(date_col) == target_date
-        # getattr() is used to resolve the string 'date_col' to the actual Model Attribute
-        stmt = delete(self.model).where(getattr(self.model, date_col) == target_date)
+    async def replace_by_date_range(self, items, date_col, start_date, end_date):
+        # getatt, and_r() is used to resolve the string 'date_col' to the actual Model Attribute
+        stmt = delete(self.model).where(
+            and_(
+                getattr(self.model, date_col) >= start_date,
+                getattr(self.model, date_col) <= end_date,
+            )
+        )
         await self.session.execute(stmt)
 
-        if items:
-            await self.bulk_upsert(items)
-        else:
+        # Commit the delete immediately if list is empty, or upsert new items
+        if not items:
             await self.session.commit()
+            return
+
+        await self.bulk_upsert(items)

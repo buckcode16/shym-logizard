@@ -1,5 +1,5 @@
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 
 # delete on prod
@@ -18,11 +18,10 @@ async def fetch(
     client: LogizardClient, url: str, payload: dict
 ) -> List[B2BRow | D2CRow]:
     now = datetime.now()
-    formatted_date = now.strftime("%Y%m%d")
+    start_date = (now - timedelta(days=1)).strftime("%Y%m%d")
+    end_date = now.strftime("%Y%m%d")
 
-    payload.update(
-        {"TARGET_DATE_FROM": formatted_date, "TARGET_DATE_TO": formatted_date}
-    )
+    payload.update({"TARGET_DATE_FROM": start_date, "TARGET_DATE_TO": end_date})
 
     try:
         res = await client.post_json(url, payload, response_model=ExportResponse)
@@ -63,6 +62,8 @@ async def fetch(
         # !revisit
         repo = BaseRepository(session, model=Order)
 
-        await repo.replace_by_date_range(clean_data, "ship_define_date", formatted_date)
+        await repo.replace_by_date_range(
+            clean_data, "ship_define_date", start_date, end_date
+        )
 
     return clean_data
