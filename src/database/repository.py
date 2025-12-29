@@ -38,7 +38,9 @@ class BaseRepository:
     """
 
     async def bulk_upsert(self, items: List[PydanticModel]):
+        # prevent empty state logic to fail silently
         if not items:
+            await self.session.commit()
             return
 
         for item in items:
@@ -56,7 +58,10 @@ class BaseRepository:
         # ACID concept
         await self.session.execute(delete(self.model))
 
-        await self.bulk_upsert(items)
+        if items:
+            await self.bulk_upsert(items)
+        else:
+            await self.session.commit()
 
     async def replace_by_date_range(self, items, date_col, target_date):
         # add WHERE clause : column(date_col) == target_date
@@ -64,4 +69,7 @@ class BaseRepository:
         stmt = delete(self.model).where(getattr(self.model, date_col) == target_date)
         await self.session.execute(stmt)
 
-        await self.bulk_upsert(items)
+        if items:
+            await self.bulk_upsert(items)
+        else:
+            await self.session.commit()

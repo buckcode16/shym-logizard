@@ -60,6 +60,7 @@ async def fetch(
         clean_data.append(obj)
 
     async with AsyncSessionLocal() as session:
+        # !revisit
         repo = BaseRepository(session, model=Order)
 
         await repo.replace_by_date_range(clean_data, "ship_define_date", formatted_date)
