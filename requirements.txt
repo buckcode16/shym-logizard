@@ -1,0 +1,7 @@
+alembic
+asyncpg
+httpx
+pydantic
+python-dotenv
+sqlalchemy
+uvicorn
