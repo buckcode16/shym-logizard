@@ -24,8 +24,8 @@ async def fetch(
     res = await client.post_json(url, payload, response_model=ExportResponse)
 
     # Handle case where API returns success but no data (e.g., no orders for the day)
-    if not res.data or not res.data.csv_lines:
-        clean_data = []
+    if not res.data or res.data.csv_lines is None:
+        raise ValueError(f"API Error: No data returned for {payload.get('range_key')}")
 
     reader = csv.DictReader(res.data.csv_lines)
     accumulator = {}

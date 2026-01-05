@@ -17,8 +17,8 @@ async def fetch(client: LogizardClient, url: str, payload: dict) -> List[Product
     JST = timezone(timedelta(hours=9))
     now = datetime.now(JST).replace(tzinfo=None)
 
-    if not res.data or not res.data.csv_lines:
-        return []
+    if not res.data or res.data.csv_lines is None:
+        raise ValueError(f"API Error: No data returned for {payload.get('range_key')}")
     reader = csv.DictReader(res.data.csv_lines)
 
     clean_data = []

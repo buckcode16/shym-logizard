@@ -72,6 +72,7 @@ async def main():
             order.fetch(client, url=Endpoints.EXPORT_URL, payload=payload_d2c),
             # export_b2b
             order.fetch(client, url=Endpoints.EXPORT_URL, payload=payload_b2b),
+            return_exceptions=True,
         )
 
         print("Fetch complete.")
