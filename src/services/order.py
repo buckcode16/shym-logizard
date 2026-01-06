@@ -1,4 +1,5 @@
 import csv
+import logging
 from datetime import datetime, timedelta, timezone
 from typing import List
 
@@ -9,6 +10,8 @@ from src.database.repository import BaseRepository
 from src.schemas.b2b import B2BRow
 from src.schemas.d2c import D2CRow
 from src.schemas.response import ExportResponse
+
+logger = logging.getLogger(__name__)
 
 
 async def fetch(
@@ -27,29 +30,38 @@ async def fetch(
 
     res = await client.post_json(url, payload, response_model=ExportResponse)
 
+    # lz error code 0 is success
+    if res.error_code != "0":
+        logger.error(f"API Logic Error {res.error_code}: {res.data}")
+        raise ValueError(f"API returned Error Code {res.error_code}: {res.data}")
     # Handle case where API returns success but no data (e.g., no orders for the day)
-    if not res.data or res.data.csv_lines is None:
-        raise ValueError(f"API Error: No data returned for {payload.get('range_key')}")
+    if not res.data or not res.data.csv_lines:
+        logger.info(
+            f"0 Orders found for FileID {payload.get('FILE_ID')}. Wiping date range {start_date}-{end_date}."
+        )
+        reader = []
+    else:
+        reader = csv.DictReader(res.data.csv_lines)
 
-    reader = csv.DictReader(res.data.csv_lines)
     accumulator = {}
     is_d2c = payload["FILE_ID"] == "3"
 
-    for row in reader:
-        validated = D2CRow(**row) if is_d2c else B2BRow(**row)
+    if reader:
+        for row in reader:
+            validated = D2CRow(**row) if is_d2c else B2BRow(**row)
 
-        key = (validated.item_id, validated.ship_define_date)
+            key = (validated.item_id, validated.ship_define_date)
 
-        if key not in accumulator:
-            accumulator[key] = {
-                "item_id": validated.item_id,
-                "ship_define_date": validated.ship_define_date,
-                "cust_id": getattr(validated, "cust_id", None),
-                "cust_name": getattr(validated, "cust_name", None),
-                "ship_qty_int": 0,
-            }
+            if key not in accumulator:
+                accumulator[key] = {
+                    "item_id": validated.item_id,
+                    "ship_define_date": validated.ship_define_date,
+                    "cust_id": getattr(validated, "cust_id", None),
+                    "cust_name": getattr(validated, "cust_name", None),
+                    "ship_qty_int": 0,
+                }
 
-        accumulator[key]["ship_qty_int"] += int(validated.ship_qty or 0)
+            accumulator[key]["ship_qty_int"] += int(validated.ship_qty or 0)
 
     clean_data = []
     for data in accumulator.values():
@@ -66,5 +78,8 @@ async def fetch(
         await repo.replace_by_date_range(
             clean_data, "ship_define_date", start_date, end_date
         )
+
+    count = len(clean_data)
+    logger.info(f"Processed {count} orders for range {start_date}-{end_date}.")
 
     return clean_data
