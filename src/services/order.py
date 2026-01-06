@@ -19,6 +19,10 @@ async def fetch(
     start_date = (now - timedelta(days=1)).strftime("%Y%m%d")
     end_date = now.strftime("%Y%m%d")
 
+    # start_date = "20251206"
+    # end_date = "20260104"
+    # YYYYMMDD
+    # API ignore more than 30 days range
     payload.update({"TARGET_DATE_FROM": start_date, "TARGET_DATE_TO": end_date})
 
     res = await client.post_json(url, payload, response_model=ExportResponse)

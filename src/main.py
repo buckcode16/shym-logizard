@@ -11,6 +11,8 @@ configure alembic.ini to use db url
 """
 
 import asyncio
+import logging
+import sys
 
 from src.api.client import LogizardClient
 from src.config import Credentials, Endpoints, ExportConfig
@@ -52,14 +54,25 @@ payload_b2b = {
     "PTRN_ID": ExportConfig.B2B.PTRN_ID,
 }
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger("BatchRunner")
+
 
 async def main():
     async with LogizardClient() as client:
-        await client.post_json(
-            Endpoints.LOGIN_URL, payload=payload_login, response_model=LoginResponse
-        )
-
-        print("Initiate fetch.")
+        logger.info("--- Starting Batch Execution ---")
+        try:
+            await client.post_json(
+                Endpoints.LOGIN_URL, payload=payload_login, response_model=LoginResponse
+            )
+            logger.info("Login Successful.")
+        except Exception as e:
+            logger.critical(f"Login Failed: {e}")
+            sys.exit(1)
 
         results = await asyncio.gather(
             # export_master
@@ -75,8 +88,26 @@ async def main():
             return_exceptions=True,
         )
 
-        print("Fetch complete.")
+        failure_count = 0
+        for i, res in enumerate(results):
+            if isinstance(res, Exception):
+                logger.error(f"Task #{i} Failed: {res}")
+                failure_count += 1
+            else:
+                count = len(res) if isinstance(res, list) else 0
+                logger.info(f"Task #{i} Success. Fetched {count} rows.")
+
+        if failure_count > 0:
+            logger.error(f"Batch completed with {failure_count} errors.")
+            sys.exit(1)
+
+        logger.info("Batch completed successfully.")
+        sys.exit(0)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        logger.critical(f"Unexpected Crash: {e}")
+        sys.exit(1)
