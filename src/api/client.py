@@ -7,7 +7,7 @@ from pydantic import BaseModel
 # bounded generic type variable to enforce response_model to be either BaseModel
 # or BaseModel inheritance
 T = TypeVar("T", bound=BaseModel)
-timeout = httpx.Timeout(10.0, read=120.0)
+timeout = httpx.Timeout(connect=30.0, read=300.0, write=30.0, pool=30.0)
 
 
 class LogizardClient:
