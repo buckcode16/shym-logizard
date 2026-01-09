@@ -28,18 +28,28 @@ async def fetch(
     # API ignore more than 30 days range
     payload.update({"TARGET_DATE_FROM": start_date, "TARGET_DATE_TO": end_date})
 
+    file_id = payload.get("FILE_ID")
+
     res = await client.post_json(url, payload, response_model=ExportResponse)
 
-    # lz error code 0 is success
-    if res.error_code != "0":
-        logger.error(f"API Logic Error {res.error_code}: {res.data}")
-        raise ValueError(f"API returned Error Code {res.error_code}: {res.data}")
-    # Handle case where API returns success but no data (e.g., no orders for the day)
-    if not res.data or not res.data.csv_lines:
-        logger.info(
-            f"0 Orders found for FileID {payload.get('FILE_ID')}. Wiping date range {start_date}-{end_date}."
+    if file_id == "2" and res.error_code == "4":
+        logger.warning(
+            f"API returned Code 4 for B2B (FileID 2). "
+            f"Assuming 'No Data' and wiping range {start_date}-{end_date}."
         )
         reader = []
+
+    # lz error code 0 is success
+    elif res.error_code != "0":
+        logger.error(f"API Critical Error {res.error_code}: {res.data}")
+        raise ValueError(f"API returned Error Code {res.error_code}: {res.data}")
+
+    elif not res.data or not res.data.csv_lines:
+        logger.info(
+            f"0 Orders found (Code 0) for FileID {file_id}. Wiping range {start_date}-{end_date}."
+        )
+        reader = []
+
     else:
         reader = csv.DictReader(res.data.csv_lines)
 
@@ -81,5 +91,4 @@ async def fetch(
 
     count = len(clean_data)
     logger.info(f"Processed {count} orders for range {start_date}-{end_date}.")
-
     return clean_data
