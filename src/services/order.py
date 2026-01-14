@@ -86,8 +86,14 @@ async def fetch(
         # !revisit
         repo = BaseRepository(session, model=Order)
 
+        current_type = "mailorder" if is_d2c else "wholesale"
+
         await repo.replace_by_date_range(
-            clean_data, "ship_define_date", start_date, end_date
+            clean_data,
+            "ship_define_date",
+            start_date,
+            end_date,
+            duties_type=current_type,
         )
 
     count = len(clean_data)

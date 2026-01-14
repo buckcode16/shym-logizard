@@ -63,17 +63,22 @@ class BaseRepository:
         else:
             await self.session.commit()
 
-    async def replace_by_date_range(self, items, date_col, start_date, end_date):
+    async def replace_by_date_range(
+        self, items, date_col, start_date, end_date, **filters
+    ):
+        conditions = [
+            getattr(self.model, date_col) >= start_date,
+            getattr(self.model, date_col) <= end_date,
+        ]
+
+        # Add extra filters (e.g., duties_type="wholesale")
+        for key, value in filters.items():
+            conditions.append(getattr(self.model, key) == value)
+
         # getatt, and_r() is used to resolve the string 'date_col' to the actual Model Attribute
-        stmt = delete(self.model).where(
-            and_(
-                getattr(self.model, date_col) >= start_date,
-                getattr(self.model, date_col) <= end_date,
-            )
-        )
+        stmt = delete(self.model).where(and_(*conditions))
         await self.session.execute(stmt)
 
-        # Commit the delete immediately if list is empty, or upsert new items
         if not items:
             await self.session.commit()
             return
