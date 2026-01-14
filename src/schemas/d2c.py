@@ -13,6 +13,7 @@ class D2CRow(BaseModel):
     ship_qty: Optional[str] = Field(alias="出荷数")
     item_id: Optional[str] = Field(alias="商品ID")
     duties_type: str = "mailorder"
+    ship_status: Optional[str] = Field(alias="出荷ステータス")
     # request_date: Optional[str] = Field(alias="注文日")
 
     snapshot_dt: Optional[datetime] = None

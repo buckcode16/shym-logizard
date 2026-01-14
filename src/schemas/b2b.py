@@ -12,6 +12,7 @@ class B2BRow(BaseModel):
     ship_define_date: Optional[str] = Field(alias="出荷確定日")
     ship_qty: Optional[str] = Field(alias="出荷確定数")
     item_id: Optional[str] = Field(alias="商品ID")
+    ship_status: Optional[str] = Field(alias="出荷ステータス")
     duties_type: str = "wholesale"
 
     snapshot_dt: Optional[datetime] = None

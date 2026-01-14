@@ -15,5 +15,6 @@ class Order(Base):
     ship_qty: Mapped[str] = mapped_column(Text, nullable=True)
     item_id: Mapped[str] = mapped_column(Text, primary_key=True)
     duties_type: Mapped[str] = mapped_column(Text, nullable=True)
+    ship_status: Mapped[str] = mapped_column(Text, nullable=True)
 
     snapshot_dt: Mapped[datetime] = mapped_column(DateTime, nullable=True)

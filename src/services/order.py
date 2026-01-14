@@ -68,6 +68,7 @@ async def fetch(
                     "ship_define_date": validated.ship_define_date,
                     "cust_id": getattr(validated, "cust_id", None),
                     "cust_name": getattr(validated, "cust_name", None),
+                    "ship_status": getattr(validated, "ship_status", None),
                     "ship_qty_int": 0,
                 }
 
