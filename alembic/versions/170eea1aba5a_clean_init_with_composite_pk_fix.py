@@ -1,8 +1,8 @@
-"""Initial migration
+"""clean init with composite pk fix
 
-Revision ID: d86b84a3cfe8
+Revision ID: 170eea1aba5a
 Revises: 
-Create Date: 2025-12-30 10:57:13.304131
+Create Date: 2026-01-14 14:19:58.706011
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'd86b84a3cfe8'
+revision: str = '170eea1aba5a'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -27,9 +27,10 @@ def upgrade() -> None:
     sa.Column('ship_define_date', sa.Text(), nullable=False),
     sa.Column('ship_qty', sa.Text(), nullable=True),
     sa.Column('item_id', sa.Text(), nullable=False),
-    sa.Column('duties_type', sa.Text(), nullable=True),
+    sa.Column('duties_type', sa.Text(), nullable=False),
+    sa.Column('ship_status', sa.Text(), nullable=True),
     sa.Column('snapshot_dt', sa.DateTime(), nullable=True),
-    sa.PrimaryKeyConstraint('ship_define_date', 'item_id')
+    sa.PrimaryKeyConstraint('ship_define_date', 'item_id', 'duties_type')
     )
     op.create_table('product',
     sa.Column('item_id', sa.Text(), nullable=False),
