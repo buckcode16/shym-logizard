@@ -22,8 +22,8 @@ async def fetch(
     start_date = (now - timedelta(days=1)).strftime("%Y%m%d")
     end_date = now.strftime("%Y%m%d")
 
-    # start_date = "20251206"
-    # end_date = "20260104"
+    # start_date = "20251201"
+    # end_date = "20251230"
     # YYYYMMDD
     # API ignore more than 30 days range
     payload.update({"TARGET_DATE_FROM": start_date, "TARGET_DATE_TO": end_date})
@@ -60,7 +60,7 @@ async def fetch(
         for row in reader:
             validated = D2CRow(**row) if is_d2c else B2BRow(**row)
 
-            key = (validated.item_id, validated.ship_define_date)
+            key = (validated.item_id, validated.ship_define_date, validated.cust_id)
 
             if key not in accumulator:
                 accumulator[key] = {
@@ -98,4 +98,11 @@ async def fetch(
 
     count = len(clean_data)
     logger.info(f"Processed {count} orders for range {start_date}-{end_date}.")
+
+    # if clean_data:
+    #     filename = f"debug_data_{file_id}.csv"
+    #     with open(filename, "w", newline="", encoding="utf-8-sig") as f:
+    #         writer = csv.DictWriter(f, fieldnames=clean_data[0].dict().keys())
+    #         writer.writeheader()
+    #         writer.writerows(row.dict() for row in clean_data)
     return clean_data
